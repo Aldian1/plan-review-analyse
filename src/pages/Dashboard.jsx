@@ -1,6 +1,6 @@
 import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Textarea, Button, useToast } from "@chakra-ui/react";
 import PlanTemplate from "../components/PlanTemplate.jsx";
-import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
+import { useAddUserData, useUserData, supabase } from "../integrations/supabase/index.js";
 import { useState, useEffect } from "react";
 import { useSupabaseAuth } from "../integrations/supabase/auth.jsx";
 
@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (userData && userData.length > 0) {
-      const userPlans = userData.filter(item => item.user_id === session.user.id && item.user_data.type === "plan").map(item => item.user_data);
+      const userPlans = userData.filter(item => item.user_id === session.user.id && item.user_data.type === "plan").map(item => ({ ...item.user_data, id: item.id }));
       const userReviews = userData.filter(item => item.user_id === session.user.id && item.user_data.type === "review").map(item => item.user_data);
       setPlans(userPlans);
       setReviews(userReviews);
@@ -71,6 +71,34 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeletePlan = async (planId) => {
+    try {
+      const { error } = await supabase
+        .from('user_data')
+        .delete()
+        .eq('id', planId);
+
+      if (error) throw error;
+
+      setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== planId));
+      toast({
+        title: "Plan deleted.",
+        description: "Your plan has been deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting plan.",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Container maxW="container.lg">
       <VStack spacing={4} align="stretch">
@@ -89,6 +117,7 @@ const Dashboard = () => {
                   <Box key={index} p={4} borderWidth={1} borderRadius={8} boxShadow="sm">
                     <strong>{plan.date}</strong>
                     <p>{plan.text}</p>
+                    <Button colorScheme="red" onClick={() => handleDeletePlan(plan.id)}>Delete</Button>
                   </Box>
                 ))}
               </VStack>
