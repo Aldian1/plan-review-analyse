@@ -1,4 +1,5 @@
-import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Input, Button, Textarea } from "@chakra-ui/react";
+import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Textarea, Button, useToast } from "@chakra-ui/react";
+import { useAddUserData } from "../integrations/supabase/index.js";
 import { useState } from "react";
 
 const Dashboard = () => {
@@ -7,14 +8,55 @@ const Dashboard = () => {
   const [planInput, setPlanInput] = useState("");
   const [reviewInput, setReviewInput] = useState("");
 
-  const handleAddPlan = () => {
-    setPlans([...plans, { text: planInput, date: new Date().toLocaleString() }]);
-    setPlanInput("");
+  const addUserData = useAddUserData();
+  const toast = useToast();
+
+  const handleAddPlan = async () => {
+    const newPlan = { text: planInput, date: new Date().toLocaleString(), type: "plan" };
+    try {
+      await addUserData.mutateAsync({ user_data: newPlan });
+      setPlans([...plans, newPlan]);
+      setPlanInput("");
+      toast({
+        title: "Plan added.",
+        description: "Your plan has been added successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error adding plan.",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
-  const handleAddReview = () => {
-    setReviews([...reviews, { text: reviewInput, date: new Date().toLocaleString() }]);
-    setReviewInput("");
+  const handleAddReview = async () => {
+    const newReview = { text: reviewInput, date: new Date().toLocaleString(), type: "review" };
+    try {
+      await addUserData.mutateAsync({ user_data: newReview });
+      setReviews([...reviews, newReview]);
+      setReviewInput("");
+      toast({
+        title: "Review added.",
+        description: "Your review has been added successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error adding review.",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
