@@ -3,6 +3,8 @@ import PlanTemplate from "../components/PlanTemplate.jsx";
 import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
 import { useState, useEffect } from "react";
 import { useSupabaseAuth } from "../integrations/supabase/auth.jsx";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import ChatInterface from "../components/ChatInterface.jsx";
 
 const Dashboard = () => {
   const [plans, setPlans] = useState([]);
@@ -14,6 +16,18 @@ const Dashboard = () => {
   const { data: userData, isLoading } = useUserData();
   const { session } = useSupabaseAuth();
   const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const deletePlanMutation = useMutation(
+    async (planId) => {
+      await supabase.from('user_data').delete().eq('id', planId);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('user_data');
+      },
+    }
+  );
 
   useEffect(() => {
     if (userData && userData.length > 0) {
@@ -71,6 +85,27 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeletePlan = async (planId) => {
+    try {
+      await deletePlanMutation.mutateAsync(planId);
+      toast({
+        title: "Plan deleted.",
+        description: "Your plan has been deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting plan.",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Container maxW="container.lg">
       <VStack spacing={4} align="stretch">
@@ -80,6 +115,7 @@ const Dashboard = () => {
             <Tab>Plan</Tab>
             <Tab>Review</Tab>
             <Tab>Analyse</Tab>
+            <Tab>Messages</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -89,6 +125,7 @@ const Dashboard = () => {
                   <Box key={index} p={4} borderWidth={1} borderRadius={8} boxShadow="sm">
                     <strong>{plan.date}</strong>
                     <p>{plan.text}</p>
+                    <Button colorScheme="red" onClick={() => handleDeletePlan(plan.id)}>Delete</Button>
                   </Box>
                 ))}
               </VStack>
@@ -111,6 +148,9 @@ const Dashboard = () => {
             <TabPanel>
               <Heading size="md">Analysis Section</Heading>
               <p>Analysis content goes here...</p>
+            </TabPanel>
+            <TabPanel>
+              <ChatInterface />
             </TabPanel>
           </TabPanels>
         </Tabs>
