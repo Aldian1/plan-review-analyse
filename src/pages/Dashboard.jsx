@@ -4,7 +4,7 @@ import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
 import { useState, useEffect } from "react";
 import { useSupabaseAuth } from "../integrations/supabase/auth.jsx";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import ChatInterface from "../components/ChatInterface.jsx";
+import ChatInterface from "../components/chatInterface.jsx";
 
 const Dashboard = () => {
   const [plans, setPlans] = useState([]);
