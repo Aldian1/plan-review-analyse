@@ -1,6 +1,6 @@
 import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Textarea, Button, useToast } from "@chakra-ui/react";
-import { useAddUserData } from "../integrations/supabase/index.js";
-import { useState } from "react";
+import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
+import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const [plans, setPlans] = useState([]);
@@ -9,7 +9,17 @@ const Dashboard = () => {
   const [reviewInput, setReviewInput] = useState("");
 
   const addUserData = useAddUserData();
+  const { data: userData, isLoading } = useUserData();
   const toast = useToast();
+
+  useEffect(() => {
+    if (userData && userData.length > 0) {
+      const userPlans = userData.filter(item => item.user_data.type === "plan").map(item => item.user_data);
+      const userReviews = userData.filter(item => item.user_data.type === "review").map(item => item.user_data);
+      setPlans(userPlans);
+      setReviews(userReviews);
+    }
+  }, [userData]);
 
   const handleAddPlan = async () => {
     const newPlan = { text: planInput, date: new Date().toLocaleString(), type: "plan" };
