@@ -27,8 +27,8 @@ const Dashboard = () => {
   const handleAddPlan = async (newPlan) => {
     try {
       await addUserData.mutateAsync({ user_data: { ...newPlan, type: "plan" }, user_id: session.user.id });
-      setPlans([...plans, newPlan]);
-      
+      setPlans((prevPlans) => [...prevPlans, newPlan]); // Update state correctly
+
       toast({
         title: "Plan added.",
         description: "Your plan has been added successfully.",
