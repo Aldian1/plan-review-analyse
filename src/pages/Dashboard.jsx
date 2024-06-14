@@ -1,4 +1,5 @@
 import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Textarea, Button, useToast } from "@chakra-ui/react";
+import PlanTemplate from "../components/PlanTemplate.jsx";
 import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
 import { useState, useEffect } from "react";
 import { useSupabaseAuth } from "../integrations/supabase/auth.jsx";
@@ -23,12 +24,11 @@ const Dashboard = () => {
     }
   }, [userData, session]);
 
-  const handleAddPlan = async () => {
-    const newPlan = { text: planInput, date: new Date().toLocaleString(), type: "plan" };
+  const handleAddPlan = async (newPlan) => {
     try {
-      await addUserData.mutateAsync({ user_data: newPlan, user_id: session.user.id });
+      await addUserData.mutateAsync({ user_data: { ...newPlan, type: "plan" }, user_id: session.user.id });
       setPlans([...plans, newPlan]);
-      setPlanInput("");
+      
       toast({
         title: "Plan added.",
         description: "Your plan has been added successfully.",
@@ -83,11 +83,7 @@ const Dashboard = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <FormControl>
-                <FormLabel>New Plan</FormLabel>
-                <Textarea value={planInput} onChange={(e) => setPlanInput(e.target.value)} />
-                <Button mt={2} colorScheme="teal" onClick={handleAddPlan}>Add Plan</Button>
-              </FormControl>
+              <PlanTemplate onSave={handleAddPlan} />
               <VStack mt={4} spacing={2} align="stretch">
                 {plans.map((plan, index) => (
                   <Box key={index} p={4} borderWidth={1} borderRadius={8} boxShadow="sm">
