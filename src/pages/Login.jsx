@@ -9,7 +9,7 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
-      navigate('/');
+      navigate('/dashboard'); // Change this line to navigate to the dashboard
     }
   }, [session, navigate]);
 
