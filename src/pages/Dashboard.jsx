@@ -29,7 +29,7 @@ const Dashboard = () => {
   const handleAddPlan = async (newPlan) => {
     try {
       await addUserData.mutateAsync({ user_data: { ...newPlan, type: "plan" }, user_id: session.user.id });
-      setPlans(prevPlans => [...prevPlans, newPlan]);
+      setPlans([...plans, newPlan]);
       
       toast({
         title: "Plan added.",
@@ -52,9 +52,10 @@ const Dashboard = () => {
   const handleDeletePlan = async (index) => {
     try {
       const planToDelete = plans[index];
-      // Assuming you have a delete function in your supabase integration
+      // Assuming you have a deleteUserData function to delete the plan from the database
       await deleteUserData.mutateAsync({ user_data: planToDelete, user_id: session.user.id });
-      setPlans(prevPlans => prevPlans.filter((_, i) => i !== index));
+      const updatedPlans = plans.filter((_, i) => i !== index);
+      setPlans(updatedPlans);
       
       toast({
         title: "Plan deleted.",
@@ -117,7 +118,13 @@ const Dashboard = () => {
                   <Box key={index} p={4} borderWidth={1} borderRadius={8} boxShadow="sm">
                     <strong>{plan.date}</strong>
                     <p>{plan.text}</p>
-                    <IconButton aria-label="Delete plan" icon={<DeleteIcon />} onClick={() => handleDeletePlan(index)} />
+                    <IconButton
+                      aria-label="Delete plan"
+                      icon={<DeleteIcon />}
+                      size="sm"
+                      colorScheme="red"
+                      onClick={() => handleDeletePlan(index)}
+                    />
                   </Box>
                 ))}
               </VStack>
