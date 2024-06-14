@@ -1,4 +1,4 @@
-import { Box, Flex, Link, Spacer, Button } from "@chakra-ui/react";
+import { Box, Flex, Link, Spacer } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 
 const Navbar = () => {
@@ -9,12 +9,6 @@ const Navbar = () => {
           Home
         </Link>
         <Spacer />
-        <Link as={RouterLink} to="/login" color="white" mr={4}>
-          Login
-        </Link>
-        <Link as={RouterLink} to="/signup" color="white">
-          Signup
-        </Link>
       </Flex>
     </Box>
   );
