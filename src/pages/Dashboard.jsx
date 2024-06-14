@@ -1,6 +1,7 @@
 import { Box, Container, Heading, Tab, TabList, TabPanel, TabPanels, Tabs, VStack, FormControl, FormLabel, Textarea, Button, useToast } from "@chakra-ui/react";
 import { useAddUserData, useUserData } from "../integrations/supabase/index.js";
 import { useState, useEffect } from "react";
+import { useSupabaseAuth } from "../integrations/supabase/auth.jsx";
 
 const Dashboard = () => {
   const [plans, setPlans] = useState([]);
@@ -10,21 +11,22 @@ const Dashboard = () => {
 
   const addUserData = useAddUserData();
   const { data: userData, isLoading } = useUserData();
+  const { session } = useSupabaseAuth();
   const toast = useToast();
 
   useEffect(() => {
     if (userData && userData.length > 0) {
-      const userPlans = userData.filter(item => item.user_data.type === "plan").map(item => item.user_data);
-      const userReviews = userData.filter(item => item.user_data.type === "review").map(item => item.user_data);
+      const userPlans = userData.filter(item => item.user_id === session.user.id && item.user_data.type === "plan").map(item => item.user_data);
+      const userReviews = userData.filter(item => item.user_id === session.user.id && item.user_data.type === "review").map(item => item.user_data);
       setPlans(userPlans);
       setReviews(userReviews);
     }
-  }, [userData]);
+  }, [userData, session]);
 
   const handleAddPlan = async () => {
     const newPlan = { text: planInput, date: new Date().toLocaleString(), type: "plan" };
     try {
-      await addUserData.mutateAsync({ user_data: newPlan });
+      await addUserData.mutateAsync({ user_data: newPlan, user_id: session.user.id });
       setPlans([...plans, newPlan]);
       setPlanInput("");
       toast({
@@ -48,7 +50,7 @@ const Dashboard = () => {
   const handleAddReview = async () => {
     const newReview = { text: reviewInput, date: new Date().toLocaleString(), type: "review" };
     try {
-      await addUserData.mutateAsync({ user_data: newReview });
+      await addUserData.mutateAsync({ user_data: newReview, user_id: session.user.id });
       setReviews([...reviews, newReview]);
       setReviewInput("");
       toast({
