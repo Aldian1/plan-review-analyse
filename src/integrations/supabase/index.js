@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useSupabaseAuth } from './auth.jsx';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
@@ -52,17 +53,22 @@ table: messages
 
 */
 
-export const useUserData = () => useQuery({
-    queryKey: ['user_data'],
-    queryFn: () => fromSupabase(supabase.from('user_data').select('*')),
-});
+export const useUserData = () => {
+    const { session } = useSupabaseAuth();
+    return useQuery({
+        queryKey: ['user_data', session?.user?.id],
+        queryFn: () => fromSupabase(supabase.from('user_data').select('*').eq('user_id', session?.user?.id)),
+        enabled: !!session?.user?.id,
+    });
+};
 
 export const useAddUserData = () => {
     const queryClient = useQueryClient();
+    const { session } = useSupabaseAuth();
     return useMutation({
-        mutationFn: (newUserData) => fromSupabase(supabase.from('user_data').insert([newUserData])),
+        mutationFn: (newUserData) => fromSupabase(supabase.from('user_data').insert([{ ...newUserData, user_id: session?.user?.id }])),
         onSuccess: () => {
-            queryClient.invalidateQueries('user_data');
+            queryClient.invalidateQueries(['user_data', session?.user?.id]);
         },
     });
 };
